@@ -28,7 +28,8 @@ workflow = {
         "description": "通过 macOS 辅助功能读取声音标记；需要辅助功能权限，无需 Chrome 扩展。",
         "config": {"default": True, "required": False, "text": "启用 Chrome 发声标签页检测"},
     }],
-    "readme": (ROOT / "README.md").read_text(),
+    # Keep Alfred's import/help copy in Chinese while GitHub defaults to English.
+    "readme": (ROOT / "README.zh-CN.md").read_text(encoding="utf-8"),
     "objects": [
         {
             "uid": FILTER, "type": "alfred.workflow.input.scriptfilter", "version": 3,
@@ -74,11 +75,13 @@ workflow = {
 }
 (STAGING / "info.plist").write_bytes(plistlib.dumps(workflow))
 shutil.copy2(ROOT / "README.md", STAGING / "README.md")
+shutil.copy2(ROOT / "README.zh-CN.md", STAGING / "README.zh-CN.md")
 shutil.copy2(ROOT / "icon.png", STAGING / "icon.png")
 (STAGING / "docs").mkdir(exist_ok=True)
 shutil.copy2(ROOT / "docs/chrome-ax-validation.md", STAGING / "docs/chrome-ax-validation.md")
 archive = DIST / "SoundFinder-1.1.2.alfredworkflow"
 with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as output:
-    for name in ["info.plist", "soundfinder", "icon.png", "README.md", "docs/chrome-ax-validation.md"]:
+    for name in ["info.plist", "soundfinder", "icon.png", "README.md",
+                 "README.zh-CN.md", "docs/chrome-ax-validation.md"]:
         output.write(STAGING / name, name)
 print(f"工作流已生成：{archive}")
