@@ -14,9 +14,17 @@ with zipfile.ZipFile(archive) as package:
     icon = package.read("icon.png")
     readmes = {name: package.read(name).decode("utf-8")
                for name in ["README.md", "README.zh-CN.md"]}
+    demo = package.read("docs/images/demo-en.png")
 
 
 class WorkflowTests(unittest.TestCase):
+    def test_demo_image_is_packaged_and_referenced_in_both_languages(self):
+        root = pathlib.Path(__file__).resolve().parent.parent
+        self.assertEqual(demo[:8], b"\x89PNG\r\n\x1a\n")
+        self.assertEqual(demo, (root / "docs/images/demo-en.png").read_bytes())
+        for text in readmes.values():
+            self.assertIn("](docs/images/demo-en.png)", text)
+
     def test_both_readmes_are_packaged_with_language_links(self):
         self.assertIn("## Installation", readmes["README.md"])
         self.assertIn("[简体中文](README.zh-CN.md)", readmes["README.md"])

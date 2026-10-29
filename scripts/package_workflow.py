@@ -79,9 +79,11 @@ shutil.copy2(ROOT / "README.zh-CN.md", STAGING / "README.zh-CN.md")
 shutil.copy2(ROOT / "icon.png", STAGING / "icon.png")
 (STAGING / "docs").mkdir(exist_ok=True)
 shutil.copy2(ROOT / "docs/chrome-ax-validation.md", STAGING / "docs/chrome-ax-validation.md")
+(STAGING / "docs/images").mkdir(exist_ok=True)
+shutil.copy2(ROOT / "docs/images/demo-en.png", STAGING / "docs/images/demo-en.png")
 archive = DIST / "SoundFinder-1.1.2.alfredworkflow"
 with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as output:
     for name in ["info.plist", "soundfinder", "icon.png", "README.md",
-                 "README.zh-CN.md", "docs/chrome-ax-validation.md"]:
+                 "README.zh-CN.md", "docs/chrome-ax-validation.md", "docs/images/demo-en.png"]:
         output.write(STAGING / name, name)
 print(f"工作流已生成：{archive}")

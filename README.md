@@ -11,6 +11,11 @@ find apps and processes with active audio output, identify Chrome tabs marked as
 playing audio, and jump to the source. No Chrome extension, remote debugging,
 or background service is required.
 
+![SoundFinder English UI mockup showing Chrome audio tabs and app output streams](docs/images/demo-en.png)
+
+*Illustrative English UI mockup with example data, not a live screenshot.
+The current workflow interface remains in Simplified Chinese.*
+
 ## Features
 
 - **App and process detection:** query active output streams through Core Audio,

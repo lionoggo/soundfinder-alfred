@@ -10,6 +10,10 @@ SoundFinder 是一个使用 Swift 编写的 Alfred 工作流。在 Alfred 输入
 即可查看活跃的音频输出应用、进程和 Chrome 发声标签页，并跳转到声音来源。
 无需 Chrome 扩展、远程调试或后台常驻服务。
 
+![SoundFinder 英文界面示意：Chrome 发声和静音标签页，以及应用输出流](docs/images/demo-en.png)
+
+*英文界面演示示意图，使用示例数据，并非实机截图。当前工作流界面仍为简体中文。*
+
 ## 功能
 
 - **应用与进程定位**：通过 Core Audio 查询活跃输出流，显示应用名称、实际输出进程 PID 和输出设备。
