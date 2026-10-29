@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>SoundFinder</title>
+  <desc>A magnifying glass containing a sound waveform on a dark rounded tile.</desc>
+  <defs>
+    <linearGradient id="tile" x1="160" y1="80" x2="860" y2="944" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#183044"/>
+      <stop offset="1" stop-color="#091320"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="340" y1="300" x2="780" y2="790" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#55F0D4"/>
+      <stop offset="1" stop-color="#2BCBE4"/>
+    </linearGradient>
+  </defs>
+  <rect x="48" y="48" width="928" height="928" rx="208" fill="url(#tile)"/>
+  <rect x="50" y="50" width="924" height="924" rx="206" fill="none" stroke="#325166" stroke-width="4"/>
+  <path d="M601 591L773 763" fill="none" stroke="url(#accent)" stroke-width="96" stroke-linecap="round"/>
+  <circle cx="445" cy="435" r="220" fill="#102333" stroke="#F0FCFF" stroke-width="64"/>
+  <g fill="url(#accent)">
+    <rect x="309" y="377" width="36" height="116" rx="18"/>
+    <rect x="370" y="339" width="36" height="192" rx="18"/>
+    <rect x="431" y="300" width="36" height="270" rx="18"/>
+    <rect x="492" y="339" width="36" height="192" rx="18"/>
+    <rect x="553" y="377" width="36" height="116" rx="18"/>
+  </g>
+</svg>

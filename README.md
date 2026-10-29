@@ -1,5 +1,7 @@
 # SoundFinder for Alfred
 
+<img src="icon.png" width="112" height="112" alt="SoundFinder 图标：放大镜内的声波">
+
 **找出 Mac 上的声音来自哪个应用，或哪一张 Chrome 标签页。**
 
 SoundFinder 是一个使用 Swift 编写的 Alfred 工作流。在 Alfred 输入 `sound`，
@@ -38,7 +40,7 @@ Intel Mac 的兼容性尚未实测。工作流安装包包含编译好的程序�
 git clone https://github.com/lionoggo/soundfinder-alfred.git
 cd soundfinder-alfred
 bash scripts/build.sh
-open dist/SoundFinder-1.1.1.alfredworkflow
+open dist/SoundFinder-1.1.2.alfredworkflow
 ```
 
 在 Alfred 的导入窗口确认安装或更新“声音来源 · SoundFinder”。
@@ -136,14 +138,14 @@ swift test
 .build/release/soundfinder alfred chrome
 
 # 检查实际安装包的连接、回车行为和参数传递
-python3 scripts/test_workflow.py dist/SoundFinder-1.1.1.alfredworkflow
+python3 scripts/test_workflow.py dist/SoundFinder-1.1.2.alfredworkflow
 
 # 用全零 PCM 和音量为 0 的播放器验证真实音频输出启停
 swift scripts/smoke_audio.swift ./dist/SoundFinder/soundfinder
 ```
 
 测试覆盖音频进程归属、浏览器 Helper 合并、筛选、Chrome 标记解析、跳转参数、
-权限兜底、异步应用激活，以及安装包连接配置。
+权限兜底、异步应用激活、缺省图标，以及安装包连接配置和图标文件。
 
 `scripts/probe_chrome_ax.swift` 是辅助功能开发诊断工具，会输出全部原生标签的元数据，
 **不要公开分享其完整输出**。`Tests/fixtures/` 包含手动验证页，默认不播放；
@@ -159,13 +161,16 @@ Tests/
   SoundFinderCoreTests/ Swift 单元测试
   fixtures/            手动验证页面
 scripts/               构建、打包与集成验证脚本
+assets/                可编辑 SVG 图标源图及导出说明
+icon.png               Alfred 工作流图标和缺省结果图标
 docs/                  实测记录
 dist/                  本地生成的工作流安装包，不提交到 Git
 ```
 
 ## 版本与故障排查
 
-当前版本为 **v1.1.1**。
+当前版本为 **v1.1.2**，新增专属图标，并为后台进程、空结果、权限提示和错误提供图标。
+应用和 Chrome 标签页结果继续显示原应用的图标。图标源图和导出说明见 [assets](assets/README.md)。
 
 - **回车后仍停留在 Alfred**：确认安装 v1.1.1 或更高版本。
   该版本修复了连接误启用“Don't close Alfred”的问题，并补上实际前台进程检查。
