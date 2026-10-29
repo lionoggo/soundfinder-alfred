@@ -87,10 +87,18 @@ public enum AlfredOutput {
         for warning in chrome.warnings {
             items.append(["title": "Chrome 网页结果可能不完整", "subtitle": warning, "valid": false])
         }
+        // Keep application-specific file icons. Use the workflow identity for
+        // background processes, empty results, permission prompts, and errors.
+        items = items.map { item in
+            var item = item
+            if item["icon"] == nil { item["icon"] = ["path": "icon.png"] }
+            return item
+        }
         return ["items": items, "rerun": 2.0, "skipknowledge": true]
     }
 
     public static func failure(_ message: String) -> [String: Any] {
-        ["items": [["title": "无法读取声音来源", "subtitle": message, "valid": false]], "rerun": 2.0]
+        ["items": [["title": "无法读取声音来源", "subtitle": message, "valid": false,
+                    "icon": ["path": "icon.png"]]], "rerun": 2.0]
     }
 }

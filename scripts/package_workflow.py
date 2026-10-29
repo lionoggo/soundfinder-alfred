@@ -19,7 +19,7 @@ workflow = {
     "name": "声音来源 · SoundFinder",
     "createdby": "AFinder",
     "description": "输入 sound，查找音频输出应用/进程及 Chrome 发声标签页，无需浏览器扩展。",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "disabled": False,
     "variables": {"soundfinder_chrome_ax": "1"},
     "userconfigurationconfig": [{
@@ -74,10 +74,11 @@ workflow = {
 }
 (STAGING / "info.plist").write_bytes(plistlib.dumps(workflow))
 shutil.copy2(ROOT / "README.md", STAGING / "README.md")
+shutil.copy2(ROOT / "icon.png", STAGING / "icon.png")
 (STAGING / "docs").mkdir(exist_ok=True)
 shutil.copy2(ROOT / "docs/chrome-ax-validation.md", STAGING / "docs/chrome-ax-validation.md")
-archive = DIST / "SoundFinder-1.1.1.alfredworkflow"
+archive = DIST / "SoundFinder-1.1.2.alfredworkflow"
 with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as output:
-    for name in ["info.plist", "soundfinder", "README.md", "docs/chrome-ax-validation.md"]:
+    for name in ["info.plist", "soundfinder", "icon.png", "README.md", "docs/chrome-ax-validation.md"]:
         output.write(STAGING / name, name)
 print(f"工作流已生成：{archive}")
