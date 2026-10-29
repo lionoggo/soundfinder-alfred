@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<title>SoundFinder AX 验证</title>
+<style>
+  body { font: 18px system-ui; max-width: 680px; margin: 80px auto; line-height: 1.8; }
+  button { font: inherit; padding: 12px 18px; margin: 6px; }
+</style>
+<h1>SoundFinder AX 验证</h1>
+<p>此页只用于验证 Chrome 的辅助功能声音标记。默认不播放。
+  播放信号为极低音量，120 秒后自动停止；不会修改系统音量。</p>
+<button id="play">播放极低音量测试音</button>
+<button id="silent">输出全零静默</button>
+<button id="stop">停止测试音</button>
+<p id="state" role="status">状态：已停止</p>
+<a href="#background" id="background">测试页内链接（不改变音频）</a>
+<script>
+const label = new URLSearchParams(location.search).get("case");
+if (label) document.title += " · " + label;
+let context, gain, timer;
+async function stop() {
+  clearTimeout(timer);
+  if (context) await context.close();
+  context = gain = undefined;
+  document.querySelector("#state").textContent = "状态：已停止";
+}
+async function play(level) {
+  await stop();
+  context = new AudioContext();
+  const oscillator = context.createOscillator();
+  oscillator.frequency.value = 220;
+  gain = context.createGain();
+  gain.gain.value = level;
+  oscillator.connect(gain).connect(context.destination);
+  oscillator.start();
+  await context.resume();
+  document.querySelector("#state").textContent =
+    level === 0 ? "状态：全零静默输出" : "状态：极低音量播放中（-60 dBFS）";
+  timer = setTimeout(stop, 120000);
+}
+document.querySelector("#play").onclick = () => play(0.001);
+document.querySelector("#silent").onclick = () => play(0);
+document.querySelector("#stop").onclick = stop;
+addEventListener("pagehide", stop);
+</script>
+</html>
