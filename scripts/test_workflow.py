@@ -1,6 +1,7 @@
 """Validate the actual packaged Alfred graph, not just the Swift executable."""
 import pathlib
 import plistlib
+import re
 import struct
 import sys
 import unittest
@@ -11,9 +12,33 @@ sys.argv = sys.argv[:1]
 with zipfile.ZipFile(archive) as package:
     workflow = plistlib.loads(package.read("info.plist"))
     icon = package.read("icon.png")
+    readmes = {name: package.read(name).decode("utf-8")
+               for name in ["README.md", "README.zh-CN.md"]}
 
 
 class WorkflowTests(unittest.TestCase):
+    def test_both_readmes_are_packaged_with_language_links(self):
+        self.assertIn("## Installation", readmes["README.md"])
+        self.assertIn("[简体中文](README.zh-CN.md)", readmes["README.md"])
+        self.assertIn("## 安装", readmes["README.zh-CN.md"])
+        self.assertIn("[English](README.md)", readmes["README.zh-CN.md"])
+        root = pathlib.Path(__file__).resolve().parent.parent
+        for name, text in readmes.items():
+            self.assertEqual(text, (root / name).read_text(encoding="utf-8"))
+
+    def test_alfred_import_help_stays_chinese(self):
+        self.assertEqual(workflow["readme"], readmes["README.zh-CN.md"])
+
+    def test_bilingual_shell_commands_match(self):
+        def commands(text):
+            return [
+                line.strip()
+                for block in re.findall(r"```sh\n(.*?)\n```", text, flags=re.DOTALL)
+                for line in block.splitlines()
+                if line.strip() and not line.strip().startswith("#")
+            ]
+        self.assertEqual(commands(readmes["README.md"]), commands(readmes["README.zh-CN.md"]))
+
     def test_workflow_icon_is_square_rgba_png(self):
         self.assertEqual(icon[:8], b"\x89PNG\r\n\x1a\n")
         self.assertEqual(icon[12:16], b"IHDR")
