@@ -37,7 +37,11 @@ public struct ScanResult: Codable {
 public struct AudioReadError: LocalizedError {
     let operation: String
     let status: OSStatus
-    public var errorDescription: String? { "\(operation)失败（Core Audio \(status)）" }
+    var language: Language = .current
+    public var errorDescription: String? {
+        language.text("\(operation)失败（Core Audio \(status)）",
+                      "\(operation) failed (Core Audio \(status))")
+    }
 }
 
 /// First .app component is the owning application, not a nested browser Helper.
@@ -55,6 +59,7 @@ public func resolvedAppPath(executable: String?, reportedAppPath: String?) -> St
 }
 
 private struct AudioProperties {
+    let language: Language
     func address(_ selector: AudioObjectPropertySelector,
                  scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal)
         -> AudioObjectPropertyAddress {
@@ -71,7 +76,8 @@ private struct AudioProperties {
             AudioObjectGetPropertyData(object, &property, 0, nil, &size, $0)
         }
         guard status == noErr, size == MemoryLayout<T>.size else {
-            throw AudioReadError(operation: "读取音频属性", status: status == noErr ? -1 : status)
+            throw AudioReadError(operation: language.text("读取音频属性", "Read audio property"),
+                                 status: status == noErr ? -1 : status, language: language)
         }
         return value
     }
@@ -96,11 +102,13 @@ private struct AudioProperties {
             var size: UInt32 = 0
             let sizeStatus = AudioObjectGetPropertyDataSize(object, &property, 0, nil, &size)
             guard sizeStatus == noErr else {
-                throw AudioReadError(operation: "读取音频对象列表", status: sizeStatus)
+                throw AudioReadError(operation: language.text("读取音频对象列表", "Read audio object list"),
+                                     status: sizeStatus, language: language)
             }
             guard size > 0 else { return [] }
             guard size % UInt32(MemoryLayout<AudioObjectID>.size) == 0 else {
-                throw AudioReadError(operation: "读取音频对象列表长度", status: -1)
+                throw AudioReadError(operation: language.text("读取音频对象列表长度", "Read audio object list size"),
+                                     status: -1, language: language)
             }
             var values = [AudioObjectID](repeating: 0,
                 count: Int(size) / MemoryLayout<AudioObjectID>.size)
@@ -110,19 +118,23 @@ private struct AudioProperties {
             }
             if status == kAudioHardwareBadPropertySizeError { continue }
             guard status == noErr, size <= capacity else {
-                throw AudioReadError(operation: "读取音频对象列表", status: status == noErr ? -1 : status)
+                throw AudioReadError(operation: language.text("读取音频对象列表", "Read audio object list"),
+                                     status: status == noErr ? -1 : status, language: language)
             }
             return Array(values.prefix(Int(size) / MemoryLayout<AudioObjectID>.size))
         }
-        throw AudioReadError(operation: "音频对象列表正在变化，请重试", status: -1)
+        throw AudioReadError(operation: language.text("音频对象列表正在变化，请重试",
+                                                     "Audio object list changed; retry"),
+                             status: -1, language: language)
     }
 }
 
 public final class AudioScanner {
-    public init() {}
+    private let language: Language
+    public init(language: Language = .current) { self.language = language }
 
     public func scan() throws -> ScanResult {
-        let properties = AudioProperties()
+        let properties = AudioProperties(language: language)
         let objects = try properties.ids(AudioObjectID(kAudioObjectSystemObject),
                                          kAudioHardwarePropertyProcessObjectList)
         let apps = NSWorkspace.shared.runningApplications
@@ -155,11 +167,12 @@ public final class AudioScanner {
                 let deviceIDs = (try? properties.ids(object, kAudioProcessPropertyDevices,
                                                      scope: kAudioObjectPropertyScopeOutput)) ?? []
                 let devices = deviceIDs.map {
-                    properties.string($0, kAudioObjectPropertyName) ?? "音频设备 \($0)"
+                    properties.string($0, kAudioObjectPropertyName)
+                        ?? language.text("音频设备 \($0)", "Audio device \($0)")
                 }
                 sources.append(AudioSource(pid: pid,
                     processName: executable.map { URL(fileURLWithPath: $0).lastPathComponent }
-                        ?? directApp?.localizedName ?? "进程 \(pid)",
+                        ?? directApp?.localizedName ?? language.text("进程 \(pid)", "Process \(pid)"),
                     bundleID: bundleID, appName: appName, appPath: resolvedPath,
                     executablePath: executable, devices: devices))
             } catch {
@@ -168,7 +181,9 @@ public final class AudioScanner {
             }
         }
         return ScanResult(sources: sources.sorted { $0.pid < $1.pid },
-            warnings: skipped == 0 ? [] : ["有 \(skipped) 个音频对象读取失败或已退出；结果可能不完整"])
+            warnings: skipped == 0 ? [] : [language.text(
+                "有 \(skipped) 个音频对象读取失败或已退出；结果可能不完整",
+                "\(skipped) audio objects could not be read or exited; results may be incomplete")])
     }
 
     public static func executablePath(_ pid: Int32) -> String? {

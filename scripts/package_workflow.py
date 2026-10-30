@@ -16,28 +16,67 @@ ACTION = "DBFF0AC9-878A-43E2-A92F-19A3DBCF2E50"
 NOTIFY = "C438A67F-37B8-48B8-89B9-A4FD93611EDD"
 workflow = {
     "bundleid": "local.afinder.soundfinder",
-    "name": "声音来源 · SoundFinder",
+    "name": "SoundFinder",
     "createdby": "AFinder",
-    "description": "输入 sound，查找音频输出应用/进程及 Chrome 发声标签页，无需浏览器扩展。",
-    "version": "1.1.2",
+    "description": "Find audio sources and Chrome tabs / 查找声音来源与 Chrome 标签页",
+    "version": "1.2.0",
     "disabled": False,
-    "variables": {"soundfinder_chrome_ax": "1"},
+    "variables": {"soundfinder_chrome_ax": "1", "soundfinder_language": "auto"},
     "userconfigurationconfig": [{
+        "variable": "soundfinder_language", "type": "popupbutton",
+        "label": "UI language / 界面语言",
+        "description": "Language for results, details and notifications / 结果、详情和通知的语言。"
+                       "Auto follows the first macOS language preference / 自动跟随 macOS 首选语言。",
+        "config": {"default": "auto", "pairs": [
+            ["Auto (macOS) / 跟随系统", "auto"],
+            ["English", "en"],
+            ["简体中文", "zh-Hans"],
+        ]},
+    }, {
         "variable": "soundfinder_chrome_ax", "type": "checkbox",
-        "label": "Chrome 标签页",
-        "description": "通过 macOS 辅助功能读取声音标记；需要辅助功能权限，无需 Chrome 扩展。",
-        "config": {"default": True, "required": False, "text": "启用 Chrome 发声标签页检测"},
+        "label": "Chrome tabs / Chrome 标签页",
+        "description": "Uses Accessibility audio markers (English Chrome only); permission required, no extension. / "
+                       "读取英文 Chrome 的辅助功能声音标记；需要权限，无需扩展。",
+        "config": {"default": True, "required": False,
+                   "text": "Enable Chrome tab detection / 启用 Chrome 标签页检测"},
     }],
-    # Keep Alfred's import/help copy in Chinese while GitHub defaults to English.
-    "readme": (ROOT / "README.zh-CN.md").read_text(encoding="utf-8"),
+    # Alfred stores these fields statically, so import/configuration help is bilingual.
+    "readme": """# SoundFinder
+
+Type `sound` to find active audio output apps and Chrome audio tabs.
+Press Return to focus the existing app or original tab; ⌘C copies details.
+
+**UI language:** `auto` follows the first macOS language preference
+(Simplified Chinese → 简体中文; other languages → English).
+Choose English or 简体中文 in Configure Workflow to override it.
+
+Requires macOS 14.4+ and Alfred 5 Powerpack. Chrome tab detection needs
+Accessibility permission and an English Chrome interface. No extension needed.
+An active output stream may contain silent data. This package is ad-hoc signed,
+not Apple-notarized. See the bundled README.md for full instructions.
+
+---
+
+输入 `sound` 查找活跃音频输出应用和 Chrome 发声标签页。
+回车切到原应用或原标签页；⌘C 复制详情。
+
+**界面语言：** `auto` 跟随 macOS 首选语言（简体中文显示中文，其余显示英文）。
+在工作流配置的下拉菜单中选择 English 或 简体中文可覆盖系统设置。
+
+需要 macOS 14.4+ 与 Alfred 5 Powerpack。Chrome 标签页检测需要辅助功能权限，
+并且仍只适配英文 Chrome 界面，无需浏览器扩展。
+活跃输出流可能包含静默数据。安装包采用 ad-hoc 签名，未经 Apple 公证。
+完整说明见安装包内的 README.zh-CN.md。
+""",
     "objects": [
         {
             "uid": FILTER, "type": "alfred.workflow.input.scriptfilter", "version": 3,
             "config": {
                 "keyword": "sound", "withspace": True, "argumenttype": 1,
                 "argumenttreatemptyqueryasnil": True, "argumenttrimmode": 0,
-                "title": "查找声音来源", "subtext": "列出活跃音频输出流 · 每 2 秒刷新",
-                "runningsubtext": "正在检测声音来源…",
+                "title": "Find audio sources / 查找声音来源",
+                "subtext": "Active output streams / 活跃输出流 · 2s refresh / 每 2 秒刷新",
+                "runningsubtext": "Scanning audio sources… / 正在检测声音来源…",
                 "script": './soundfinder alfred "$1"', "scriptfile": "",
                 "type": 0, "scriptargtype": 1, "escaping": 0,
                 "alfredfiltersresults": False, "alfredfiltersresultsmatchmode": 0,
@@ -55,7 +94,7 @@ workflow = {
         {
             "uid": NOTIFY, "type": "alfred.workflow.output.notification", "version": 1,
             "config": {
-                "title": "声音来源", "text": "{query}",
+                "title": "SoundFinder", "text": "{query}",
                 "onlyshowifquerypopulated": True, "removeextension": False,
                 "lastpathcomponent": False,
             },
@@ -81,7 +120,7 @@ shutil.copy2(ROOT / "icon.png", STAGING / "icon.png")
 shutil.copy2(ROOT / "docs/chrome-ax-validation.md", STAGING / "docs/chrome-ax-validation.md")
 (STAGING / "docs/images").mkdir(exist_ok=True)
 shutil.copy2(ROOT / "docs/images/demo-en.png", STAGING / "docs/images/demo-en.png")
-archive = DIST / "SoundFinder-1.1.2.alfredworkflow"
+archive = DIST / "SoundFinder-1.2.0.alfredworkflow"
 with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as output:
     for name in ["info.plist", "soundfinder", "icon.png", "README.md",
                  "README.zh-CN.md", "docs/chrome-ax-validation.md", "docs/images/demo-en.png"]:
