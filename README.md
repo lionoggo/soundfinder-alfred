@@ -14,7 +14,7 @@ or background service is required.
 ![SoundFinder English UI mockup showing Chrome audio tabs and app output streams](docs/images/demo-en.png)
 
 *Illustrative English UI mockup with example data, not a live screenshot.
-The current workflow interface remains in Simplified Chinese.*
+It is not an exact representation of the current UI wording.*
 
 ## Features
 
@@ -26,6 +26,8 @@ The current workflow interface remains in Simplified Chinese.*
   tab, without reopening the page. Targets are checked again before activation.
 - **Live filtering:** results refresh every two seconds while open and can be
   filtered by app, process, PID, device, or tab title.
+- **Bilingual UI (v1.2.0):** English and Simplified Chinese, with automatic system
+  language selection and a manual override in Configure Workflow.
 - **Local operation:** no recording, audio sampling, network requests, or browser
   history access. The workflow never automatically pauses or closes content.
 
@@ -47,15 +49,15 @@ for the local machine's architecture; Intel Mac compatibility has not been teste
 The workflow package contains the compiled executable,
 so **Swift, Python, and Xcode are not needed to run an installed workflow**.
 
-Documentation is available in English and Simplified Chinese. The current
-workflow interface and messages remain in Simplified Chinese; Chrome audio-state
-detection still supports English markers only.
+Documentation and the v1.2.0 workflow UI support English and Simplified Chinese.
+UI language selection does not change Chrome detection: it still supports
+English Chrome audio markers only.
 
 ## Installation
 
 ### Download and install (recommended)
 
-1. Download [SoundFinder v1.1.2 for Apple Silicon](https://github.com/lionoggo/soundfinder-alfred/releases/download/v1.1.2/SoundFinder-1.1.2-arm64.alfredworkflow),
+1. Download [SoundFinder v1.2.0 for Apple Silicon](https://github.com/lionoggo/soundfinder-alfred/releases/download/v1.2.0/SoundFinder-1.2.0-arm64.alfredworkflow),
    or visit [Releases](https://github.com/lionoggo/soundfinder-alfred/releases/latest).
 2. Double-click the `.alfredworkflow` file and confirm installation or update in Alfred.
 3. Open Alfred and type `sound`. Authorize Accessibility access if you want Chrome tab detection.
@@ -78,10 +80,10 @@ Generated packages are excluded from Git; prebuilt installers are distributed th
 git clone https://github.com/lionoggo/soundfinder-alfred.git
 cd soundfinder-alfred
 bash scripts/build.sh
-open dist/SoundFinder-1.1.2.alfredworkflow
+open dist/SoundFinder-1.2.0.alfredworkflow
 ```
 
-Confirm installation or update of “声音来源 · SoundFinder” in Alfred's import
+Confirm installation or update of “SoundFinder” in Alfred's import
 dialog. The script runs tests before creating a locally ad-hoc-signed package.
 It does not automatically modify installed workflows, notarize the executable,
 or publish a GitHub release.
@@ -107,7 +109,7 @@ to an activatable app can be inspected and copied, but are never terminated.
 
 ### Chrome Accessibility permission
 
-If you see “授权 Chrome 标签页检测” (authorize Chrome tab detection), select it
+If you see “Authorize Chrome tab detection” (or “授权 Chrome 标签页检测”), select it
 and press Return to open:
 
 **System Settings → Privacy & Security → Accessibility**
@@ -123,7 +125,7 @@ Events,” and Chrome debugging permissions are not required.
 
 ### Disable Chrome detection
 
-Uncheck “启用 Chrome 发声标签页检测” (enable Chrome audio tab detection) in the
+Uncheck “Enable Chrome tab detection / 启用 Chrome 标签页检测” in the
 workflow's configuration to keep only app and process detection. There is no need
 to downgrade to an older version.
 
@@ -132,6 +134,33 @@ For command-line use, you can also set:
 ```sh
 soundfinder_chrome_ax=0 .build/release/soundfinder alfred
 ```
+
+### UI language
+
+Open **Configure Workflow… → UI language / 界面语言** and select:
+
+| Option | Result |
+| --- | --- |
+| Auto (macOS) / 跟随系统 | Use the first macOS preferred language: Simplified Chinese uses Chinese; all other languages use English |
+| English | Always use English |
+| 简体中文 | Always use Simplified Chinese |
+
+The selection applies to result subtitles, copied details, permission and error
+messages, and activation notifications the next time you run `sound`. App names,
+device names, tab titles, and raw system/Accessibility data are preserved.
+Alfred's fixed configuration, import help, and initial scanning prompts are
+bilingual; the notification title is always SoundFinder.
+
+For command-line use:
+
+```sh
+soundfinder_language=en .build/release/soundfinder alfred
+soundfinder_language=zh-Hans .build/release/soundfinder alfred
+```
+
+An unset, empty, or invalid language value falls back to the system preference.
+Chrome tab detection still requires an **English Chrome interface**, regardless
+of the workflow's selected UI language.
 
 ## How it works
 
@@ -194,7 +223,7 @@ swift test
 .build/release/soundfinder alfred chrome
 
 # Check the actual workflow package's connections, Return behavior, and arguments
-python3 scripts/test_workflow.py dist/SoundFinder-1.1.2.alfredworkflow
+python3 scripts/test_workflow.py dist/SoundFinder-1.2.0.alfredworkflow
 
 # Verify real output start/stop with zero PCM data and a player set to volume 0
 swift scripts/smoke_audio.swift ./dist/SoundFinder/soundfinder
@@ -230,8 +259,10 @@ dist/                  Locally generated packages, not tracked in Git
 
 ## Version and troubleshooting
 
-The current version is **v1.1.2**, which adds the identity icon and icons for
-background processes, empty results, permission prompts, and errors.
+The current version is **v1.2.0**, which adds English/Simplified Chinese UI
+selection. See the [bilingual release notes](docs/releases/v1.2.0.md).
+The identity icon added in v1.1.2 covers background processes, empty results,
+permission prompts, and errors.
 App and Chrome tab results keep their application icons.
 See [assets](assets/README.md) (Chinese) for the icon source and export notes.
 

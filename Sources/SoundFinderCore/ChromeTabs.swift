@@ -84,7 +84,8 @@ public enum ChromeAudioLabel {
 }
 
 public final class ChromeTabScanner {
-    public init() {}
+    private let language: Language
+    public init(language: Language = .current) { self.language = language }
     private func value(_ element: AXUIElement, _ attribute: String) -> CFTypeRef? {
         var result: CFTypeRef?
         guard AXUIElementCopyAttributeValue(element, attribute as CFString, &result) == .success else {
@@ -167,46 +168,62 @@ public final class ChromeTabScanner {
                 walk(window, path: [index], app: app, insideTabs: false)
             }
         }
-        if capped { warnings.append("Chrome 标签栏扫描超时或达到上限；网页结果可能不完整") }
-        if readFailed { warnings.append("部分 Chrome 辅助功能控件读取失败；网页结果可能不完整") }
+        if capped { warnings.append(language.text(
+            "Chrome 标签栏扫描超时或达到上限；网页结果可能不完整",
+            "Chrome tab scan timed out or reached its limit; tab results may be incomplete")) }
+        if readFailed { warnings.append(language.text(
+            "部分 Chrome 辅助功能控件读取失败；网页结果可能不完整",
+            "Some Chrome Accessibility controls could not be read; tab results may be incomplete")) }
         if scannedTabs == 0 && warnings.isEmpty {
-            warnings.append("未能读取 Chrome 标签栏；应用级结果仍可使用")
+            warnings.append(language.text("未能读取 Chrome 标签栏；应用级结果仍可使用",
+                                          "Could not read Chrome's tab strip; app-level results are still available"))
         }
         return ChromeScanResult(tabs: tabs, warnings: warnings, scannedTabCount: scannedTabs)
     }
 
     public func activate(_ expected: ChromeTab) -> String {
-        guard AXIsProcessTrusted() else { return "无法跳转：请先授权辅助功能权限。" }
+        guard AXIsProcessTrusted() else {
+            return language.text("无法跳转：请先授权辅助功能权限。",
+                                 "Unable to switch: grant Accessibility permission first.")
+        }
         guard let app = apps.first(where: { $0.processIdentifier == expected.pid }),
               app.launchDate?.timeIntervalSince1970 == expected.launchTime else {
-            return "未跳转：Chrome 已退出或重新启动，请重新输入 sound。"
+            return language.text("未跳转：Chrome 已退出或重新启动，请重新输入 sound。",
+                                 "Not switched: Chrome exited or restarted. Run sound again.")
         }
         let current = scan()
         let matches = current.tabs.filter { $0.pid == expected.pid && $0.title == expected.title }
         // Do not guess when matching labels are ambiguous or tabs were reordered.
         guard current.warnings.isEmpty, matches.count == 1,
               let tab = matches.first, tab.path == expected.path, tab.state == expected.state else {
-            return "未跳转：标签页已变化、停止播放或标题重复，请重新输入 sound。"
+            return language.text("未跳转：标签页已变化、停止播放或标题重复，请重新输入 sound。",
+                                 "Not switched: tab changed, playback stopped, or titles are duplicated. Run sound again.")
         }
         let root = AXUIElementCreateApplication(expected.pid)
         AXUIElementSetMessagingTimeout(root, 0.2)
         guard let windows = value(root, kAXWindowsAttribute) as? [AXUIElement],
               let windowIndex = expected.path.first, windows.indices.contains(windowIndex) else {
-            return "未跳转：原窗口已变化，请刷新。"
+            return language.text("未跳转：原窗口已变化，请刷新。",
+                                 "Not switched: the original window changed. Refresh results.")
         }
         let window = windows[windowIndex]
         var element = window
         for index in expected.path.dropFirst() {
             guard let children = value(element, kAXChildrenAttribute) as? [AXUIElement],
-                  children.indices.contains(index) else { return "未跳转：标签页位置已变化，请刷新。" }
+                  children.indices.contains(index) else {
+                return language.text("未跳转：标签页位置已变化，请刷新。",
+                                     "Not switched: tab position changed. Refresh results.")
+            }
             element = children[index]
         }
         guard let parsed = ChromeAudioLabel.parse(label(element)),
               parsed.title == expected.title, parsed.state == expected.state else {
-            return "未跳转：目标标签页已变化，请刷新。"
+            return language.text("未跳转：目标标签页已变化，请刷新。",
+                                 "Not switched: the target tab changed. Refresh results.")
         }
         guard AXUIElementPerformAction(element, kAXPressAction as CFString) == .success else {
-            return "Chrome 拒绝了标签页切换，请手动打开浏览器。"
+            return language.text("Chrome 拒绝了标签页切换，请手动打开浏览器。",
+                                 "Chrome refused the tab switch. Open the browser manually.")
         }
         // Read back selection instead of treating AXPress success as proof.
         let deadline = Date().addingTimeInterval(0.8)
@@ -218,14 +235,18 @@ public final class ChromeTabScanner {
             }
             RunLoop.current.run(until: Date().addingTimeInterval(0.04))
         } while Date() < deadline
-        guard selected else { return "已请求切换，但未确认标签页选中状态；请查看 Chrome。" }
+        guard selected else {
+            return language.text("已请求切换，但未确认标签页选中状态；请查看 Chrome。",
+                                 "Switch requested, but tab selection was not confirmed. Check Chrome.")
+        }
         // Only unminimize the chosen window after an explicit Return action.
         AXUIElementSetAttributeValue(window, kAXMinimizedAttribute as CFString, kCFBooleanFalse)
         AXUIElementPerformAction(window, kAXRaiseAction as CFString)
         guard RunningAppActivation.activate(app) else {
-            return "标签页已选中，但 Chrome 未切到前台，请手动查看。"
+            return language.text("标签页已选中，但 Chrome 未切到前台，请手动查看。",
+                                 "Tab selected, but Chrome did not come to the foreground. Check it manually.")
         }
-        return "已切换到 Chrome 标签页：\(expected.title)"
+        return language.text("已切换到 Chrome 标签页：", "Switched to Chrome tab: ") + expected.title
     }
 
     public func requestPermission() -> String {
@@ -234,6 +255,7 @@ public final class ChromeTabScanner {
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
             NSWorkspace.shared.open(url)
         }
-        return "请在辅助功能中允许 Alfred 或系统提示的 soundfinder，然后重新输入 sound。"
+        return language.text("请在辅助功能中允许 Alfred 或系统提示的 soundfinder，然后重新输入 sound。",
+                             "In Accessibility settings, allow Alfred or soundfinder as prompted, then run sound again.")
     }
 }

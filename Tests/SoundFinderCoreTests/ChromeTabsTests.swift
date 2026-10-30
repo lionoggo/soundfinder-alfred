@@ -27,7 +27,7 @@ final class ChromeTabsTests: XCTestCase {
 
     func testChromeRowsRemainAvailableWithoutCoreAudioSources() throws {
         let output = AlfredOutput.make(result: ScanResult(sources: []),
-                                       chrome: ChromeScanResult(tabs: [tab]))
+                                       chrome: ChromeScanResult(tabs: [tab]), language: .simplifiedChinese)
         let items = try XCTUnwrap(output["items"] as? [[String: Any]])
         XCTAssertEqual(items.count, 1)
         XCTAssertEqual(items[0]["arg"] as? String, tab.argument)
@@ -48,7 +48,8 @@ final class ChromeTabsTests: XCTestCase {
 
     func testFilterMatchesChromeTabTitleAndReportsPartialResults() throws {
         let items = try XCTUnwrap(AlfredOutput.make(result: ScanResult(sources: []),
-            query: "chrome 网页", chrome: ChromeScanResult(tabs: [tab], warnings: ["超时"]))["items"]
+            query: "chrome 网页", chrome: ChromeScanResult(tabs: [tab], warnings: ["超时"]),
+            language: .simplifiedChinese)["items"]
                                  as? [[String: Any]])
         XCTAssertEqual(items.count, 2)
         XCTAssertTrue((items[0]["title"] as? String ?? "").contains("网页"))

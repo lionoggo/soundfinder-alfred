@@ -12,7 +12,7 @@ SoundFinder 是一个使用 Swift 编写的 Alfred 工作流。在 Alfred 输入
 
 ![SoundFinder 英文界面示意：Chrome 发声和静音标签页，以及应用输出流](docs/images/demo-en.png)
 
-*英文界面演示示意图，使用示例数据，并非实机截图。当前工作流界面仍为简体中文。*
+*英文界面演示示意图，使用示例数据，并非实机截图；文案不与当前界面逐字对应。*
 
 ## 功能
 
@@ -20,6 +20,7 @@ SoundFinder 是一个使用 Swift 编写的 Alfred 工作流。在 Alfred 输入
 - **Chrome 标签页定位**：读取原生辅助功能声音标记，区分发声页与已静音页，包括普通后台标签页。
 - **直接跳转**：回车切到已有应用或原标签页，不重新打开网页；切换前重新核对目标。
 - **实时筛选**：列表打开时每 2 秒刷新，支持按应用名、进程名、PID、设备和标签页标题筛选。
+- **双语界面（v1.2.0）**：支持英文和简体中文，默认跟随系统语言，也可在工作流配置中手动选择。
 - **本地运行**：不录音、不采样音频、不联网、不读取浏览器历史，也不会自动暂停或关闭内容。
 
 > “输出流活跃”不等于一定有可听见的声音。应用可能保持音频通道打开，
@@ -38,14 +39,14 @@ SoundFinder 是一个使用 Swift 编写的 Alfred 工作流。在 Alfred 输入
 Intel Mac 的兼容性尚未实测。工作流安装包包含编译好的程序，
 **运行工作流不需要 Swift、Python 或 Xcode**。
 
-README 提供中英文版本；当前工作流界面和提示仍使用简体中文，
-Chrome 发声状态识别仍只适配英文标记。
+README 和 v1.2.0 工作流界面支持中英文；界面语言选择不会改变 Chrome 检测逻辑，
+Chrome 发声状态识别仍只适配英文 Chrome 的声音标记。
 
 ## 安装
 
 ### 直接下载安装（推荐）
 
-1. 下载 [SoundFinder v1.1.2 Apple Silicon 安装包](https://github.com/lionoggo/soundfinder-alfred/releases/download/v1.1.2/SoundFinder-1.1.2-arm64.alfredworkflow)，
+1. 下载 [SoundFinder v1.2.0 Apple Silicon 安装包](https://github.com/lionoggo/soundfinder-alfred/releases/download/v1.2.0/SoundFinder-1.2.0-arm64.alfredworkflow)，
    或前往 [Releases](https://github.com/lionoggo/soundfinder-alfred/releases/latest)。
 2. 双击 `.alfredworkflow` 文件，在 Alfred 中确认安装或更新。
 3. 唤起 Alfred 输入 `sound`；如需 Chrome 标签页检测，按提示授权辅助功能。
@@ -68,10 +69,10 @@ shasum -a 256 -c SHA256SUMS.txt
 git clone https://github.com/lionoggo/soundfinder-alfred.git
 cd soundfinder-alfred
 bash scripts/build.sh
-open dist/SoundFinder-1.1.2.alfredworkflow
+open dist/SoundFinder-1.2.0.alfredworkflow
 ```
 
-在 Alfred 的导入窗口确认安装或更新“声音来源 · SoundFinder”。
+在 Alfred 的导入窗口确认安装或更新“SoundFinder”。
 打包脚本会先运行测试，再生成本地 ad-hoc 签名的安装包；不自动修改已安装工作流，
 也不执行 Apple 公证或 GitHub 发布。
 
@@ -95,7 +96,7 @@ open dist/SoundFinder-1.1.2.alfredworkflow
 
 ### Chrome 辅助功能授权
 
-如果显示“授权 Chrome 标签页检测”，选择该项并回车，打开：
+如果显示“授权 Chrome 标签页检测”（英文界面为 “Authorize Chrome tab detection”），选择该项并回车，打开：
 
 **系统设置 → 隐私与安全性 → 辅助功能**
 
@@ -108,7 +109,7 @@ AppleScript 自动化、“允许来自 Apple Events 的 JavaScript”或 Chrome
 
 ### 关闭 Chrome 检测
 
-在 Alfred 工作流配置中取消勾选“启用 Chrome 发声标签页检测”，
+在 Alfred 工作流配置中取消勾选“Enable Chrome tab detection / 启用 Chrome 标签页检测”，
 即可只保留应用和进程检测，无需回退到旧版本。
 
 命令行中也可以设置：
@@ -116,6 +117,30 @@ AppleScript 自动化、“允许来自 Apple Events 的 JavaScript”或 Chrome
 ```sh
 soundfinder_chrome_ax=0 .build/release/soundfinder alfred
 ```
+
+### 界面语言
+
+打开 **Configure Workflow… → UI language / 界面语言**，在下拉菜单中选择：
+
+| 选项 | 效果 |
+| --- | --- |
+| Auto (macOS) / 跟随系统 | 读取 macOS 的第一首选语言：简体中文显示中文，其他语言显示英文 |
+| English | 始终显示英文 |
+| 简体中文 | 始终显示简体中文 |
+
+下次运行 `sound` 时生效，覆盖结果说明、复制详情、授权与错误提示、跳转通知。
+应用名称、设备名称、网页标题和原始系统/辅助功能数据保持原样，不做翻译。
+Alfred 的固定配置项、导入帮助和初始检测提示使用双语；通知标题统一为 SoundFinder。
+
+命令行中也可以设置：
+
+```sh
+soundfinder_language=en .build/release/soundfinder alfred
+soundfinder_language=zh-Hans .build/release/soundfinder alfred
+```
+
+未设置、空值或无效值都会回退到系统首选语言。
+无论工作流选择哪种界面语言，Chrome 标签页检测仍要求 **Chrome 英文界面**。
 
 ## 工作原理
 
@@ -166,7 +191,7 @@ swift test
 .build/release/soundfinder alfred chrome
 
 # 检查实际安装包的连接、回车行为和参数传递
-python3 scripts/test_workflow.py dist/SoundFinder-1.1.2.alfredworkflow
+python3 scripts/test_workflow.py dist/SoundFinder-1.2.0.alfredworkflow
 
 # 用全零 PCM 和音量为 0 的播放器验证真实音频输出启停
 swift scripts/smoke_audio.swift ./dist/SoundFinder/soundfinder
@@ -199,7 +224,8 @@ dist/                  本地生成的工作流安装包，不提交到 Git
 
 ## 版本与故障排查
 
-当前版本为 **v1.1.2**，新增专属图标，并为后台进程、空结果、权限提示和错误提供图标。
+当前版本为 **v1.2.0**，新增英文/简体中文界面选择，详见[双语发布说明](docs/releases/v1.2.0.md)。
+v1.1.2 新增的专属图标继续用于后台进程、空结果、权限提示和错误。
 应用和 Chrome 标签页结果继续显示原应用的图标。图标源图和导出说明见 [assets](assets/README.md)。
 
 - **回车后仍停留在 Alfred**：确认安装 v1.1.1 或更高版本。

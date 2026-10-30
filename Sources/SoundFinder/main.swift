@@ -9,8 +9,9 @@ func printJSON(_ object: Any) throws {
 
 let args = Array(CommandLine.arguments.dropFirst())
 let command = args.first ?? "alfred"
-let scanner = AudioScanner()
-let chromeScanner = ChromeTabScanner()
+let language = Language.current
+let scanner = AudioScanner(language: language)
+let chromeScanner = ChromeTabScanner(language: language)
 let chromeEnabled = !["0", "false", "off"].contains(
     ProcessInfo.processInfo.environment["soundfinder_chrome_ax"]?.lowercased() ?? "1")
 
@@ -22,7 +23,7 @@ do {
         do { audio = try scanner.scan() }
         catch { audio = ScanResult(sources: [], warnings: [error.localizedDescription]) }
         try printJSON(AlfredOutput.make(result: audio,
-            query: args.dropFirst().joined(separator: " "), chrome: chrome))
+            query: args.dropFirst().joined(separator: " "), chrome: chrome, language: language))
     case "chrome-list":
         let data = try JSONEncoder().encode(chromeScanner.scan())
         FileHandle.standardOutput.write(data)
@@ -34,7 +35,8 @@ do {
     case "activate":
         guard args.count == 2 else {
             throw NSError(domain: "SoundFinder", code: 1,
-                          userInfo: [NSLocalizedDescriptionKey: "缺少目标应用路径"])
+                          userInfo: [NSLocalizedDescriptionKey:
+                            language.text("缺少目标应用路径", "Missing target app path")])
         }
         if args[1] == "chrome-permissions" {
             print(chromeScanner.requestPermission())
@@ -42,20 +44,25 @@ do {
             if let tab = ChromeTab.from(argument: args[1]) {
                 print(chromeScanner.activate(tab))
             } else {
-                print("无法跳转：标签页参数无效，请重新输入 sound。")
+                print(language.text("无法跳转：标签页参数无效，请重新输入 sound。",
+                                    "Unable to switch: invalid tab argument. Run sound again."))
             }
         } else if try scanner.activate(appPath: args[1]) {
-            print("已切换到 \(URL(fileURLWithPath: args[1]).deletingPathExtension().lastPathComponent)")
+            print(language.text("已切换到 ", "Switched to ")
+                  + URL(fileURLWithPath: args[1]).deletingPathExtension().lastPathComponent)
         } else {
-            print("未切换：该来源已停止输出、应用已退出，或无法激活。重新输入 sound 刷新。")
+            print(language.text("未切换：该来源已停止输出、应用已退出，或无法激活。重新输入 sound 刷新。",
+                                "Not switched: output stopped, the app exited, or activation failed. Run sound to refresh."))
         }
     default:
         throw NSError(domain: "SoundFinder", code: 2,
-                      userInfo: [NSLocalizedDescriptionKey: "用法：soundfinder alfred [搜索词] | list | chrome-list | activate <目标>"])
+                      userInfo: [NSLocalizedDescriptionKey: language.text(
+                        "用法：soundfinder alfred [搜索词] | list | chrome-list | activate <目标>",
+                        "Usage: soundfinder alfred [query] | list | chrome-list | activate <target>")])
     }
 } catch {
     if command == "activate" {
-        print("无法切换：\(error.localizedDescription)")
+        print(language.text("无法切换：", "Unable to switch: ") + error.localizedDescription)
     } else {
         FileHandle.standardError.write(Data("\(error.localizedDescription)\n".utf8))
     }

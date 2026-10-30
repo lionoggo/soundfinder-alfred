@@ -61,13 +61,15 @@ final class SoundFinderCoreTests: XCTestCase {
             XCTAssertEqual(items[0]["title"] as? String, "Chrome")
         }
         let unmatched = try XCTUnwrap(
-            AlfredOutput.make(result: result, query: "不存在")["items"] as? [[String: Any]])
+            AlfredOutput.make(result: result, query: "不存在", language: .simplifiedChinese)["items"]
+                as? [[String: Any]])
         XCTAssertEqual(unmatched[0]["title"] as? String, "没有匹配的声音来源")
     }
 
     func testEmptyAndPartialResultsAreNotReportedAsSilence() throws {
         let items = try XCTUnwrap(AlfredOutput.make(result:
-            ScanResult(sources: [], warnings: ["读取失败"]))["items"] as? [[String: Any]])
+            ScanResult(sources: [], warnings: ["读取失败"]), language: .simplifiedChinese)["items"]
+                as? [[String: Any]])
         XCTAssertEqual(items.count, 2)
         XCTAssertEqual(items[0]["title"] as? String, "暂未发现活跃音频输出流")
         XCTAssertEqual(items[1]["title"] as? String, "检测结果可能不完整")

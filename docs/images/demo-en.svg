@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="920" viewBox="0 0 1440 920">
   <title>SoundFinder for Alfred — English interface mockup</title>
-  <desc>Illustrative Alfred results for an audio-playing Chrome tab, a muted Chrome tab, Godot, and Music. Example data; the shipping workflow interface remains Chinese.</desc>
+  <desc>Illustrative Alfred results for an audio-playing Chrome tab, a muted Chrome tab, Godot, and Music. Example data, not a live screenshot; wording may differ from the current bilingual workflow.</desc>
   <defs>
     <linearGradient id="background" x1="0" y1="0" x2="1440" y2="920" gradientUnits="userSpaceOnUse">
       <stop stop-color="#14202c"/><stop offset="1" stop-color="#080e16"/>
@@ -54,6 +54,6 @@
     </g>
     <text x="122" y="786" fill="#70ddd2" font-size="23" font-weight="550">Find the source. Jump to it.</text>
     <text x="122" y="824" fill="#9cabb8" font-size="19">No Chrome extension · No recording · No background service</text>
-    <text x="122" y="874" fill="#8292a1" font-size="16">Illustrative example data. The current workflow UI is Chinese; muted tabs are not audible.</text>
+    <text x="122" y="874" fill="#8292a1" font-size="16">Illustrative mockup, not a live screenshot. UI wording may differ; muted tabs are not audible.</text>
   </g>
 </svg>
