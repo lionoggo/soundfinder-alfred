@@ -53,8 +53,26 @@ detection still supports English markers only.
 
 ## Installation
 
-This repository contains source code and packaging scripts. Workflow packages
-are generated locally and are not committed to Git.
+### Download and install (recommended)
+
+1. Download [SoundFinder v1.1.2 for Apple Silicon](https://github.com/lionoggo/soundfinder-alfred/releases/download/v1.1.2/SoundFinder-1.1.2-arm64.alfredworkflow),
+   or visit [Releases](https://github.com/lionoggo/soundfinder-alfred/releases/latest).
+2. Double-click the `.alfredworkflow` file and confirm installation or update in Alfred.
+3. Open Alfred and type `sound`. Authorize Accessibility access if you want Chrome tab detection.
+
+The downloadable package is for **Apple Silicon (arm64)**, not a universal binary.
+It is locally ad-hoc signed, not Apple-notarized. A `SHA256SUMS.txt` file is included
+with the release to verify the download:
+
+```sh
+# Run in the directory containing both downloaded files
+shasum -a 256 -c SHA256SUMS.txt
+```
+
+### Build from source
+
+For development or a local build, this repository also provides packaging scripts.
+Generated packages are excluded from Git; prebuilt installers are distributed through Releases.
 
 ```sh
 git clone https://github.com/lionoggo/soundfinder-alfred.git

@@ -43,7 +43,26 @@ Chrome 发声状态识别仍只适配英文标记。
 
 ## 安装
 
-当前仓库提供源码和打包脚本；安装包在本地构建后生成，不提交到 Git。
+### 直接下载安装（推荐）
+
+1. 下载 [SoundFinder v1.1.2 Apple Silicon 安装包](https://github.com/lionoggo/soundfinder-alfred/releases/download/v1.1.2/SoundFinder-1.1.2-arm64.alfredworkflow)，
+   或前往 [Releases](https://github.com/lionoggo/soundfinder-alfred/releases/latest)。
+2. 双击 `.alfredworkflow` 文件，在 Alfred 中确认安装或更新。
+3. 唤起 Alfred 输入 `sound`；如需 Chrome 标签页检测，按提示授权辅助功能。
+
+下载包仅适用于 **Apple Silicon（arm64）**，不是通用二进制。
+采用本地 ad-hoc 签名，未经过 Apple 公证。Release 同时提供 `SHA256SUMS.txt`，
+可核对安装包的下载完整性：
+
+```sh
+# 在两个下载文件所在的目录执行
+shasum -a 256 -c SHA256SUMS.txt
+```
+
+### 从源码构建
+
+开发或本机构建可以使用仓库提供的打包脚本。
+本地生成的安装包不提交到 Git；预编译安装包通过 Releases 分发。
 
 ```sh
 git clone https://github.com/lionoggo/soundfinder-alfred.git
